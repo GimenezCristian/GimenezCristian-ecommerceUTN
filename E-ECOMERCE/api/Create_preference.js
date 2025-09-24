@@ -1,37 +1,29 @@
-import { MercadoPagoConfig, Preference } from "mercadopago";
+import { Preference, MercadoPagoConfig } from "mercadopago";
 
-const mp = new MercadoPagoConfig({
+const client = new MercadoPagoConfig({
     accessToken: process.env.MP_ACCESS_TOKEN
 });
 
 export default async function handler(req, res) {
-    if (req.method === "POST") {
-        const cart = req.body.cart || [];
+    if (req.method !== "POST") return res.status(405).send("Method not allowed");
+
+    try {
+        const cart = req.body.cart;
         const items = cart.map(p => ({
             title: p.productName,
-            unit_price: p.price,
-            quantity: p.quanty,
-            currency_id: "ARS"
+            unit_price: Number(p.price),
+            quantity: Number(p.quanty)
         }));
 
-        const preference = {
-            items,
-            back_urls: {
-                success: `${req.headers.origin}/api/success`,
-                failure: `${req.headers.origin}/api/failure`,
-                pending: `${req.headers.origin}/api/pending`
-            },
-            auto_return: "approved"
-        };
+        const preference = new Preference(client);
+        const response = await preference.create({ body: { items, back_urls: {
+            success: "https://gimenez-cristian-ecommerce-ox9yt5o6d.vercel.app/success.html",
+            failure: "https://gimenez-cristian-ecommerce-ox9yt5o6d.vercel.app/failure.html",
+            pending: "https://gimenez-cristian-ecommerce-ox9yt5o6d.vercel.app/pending.html"
+        }, auto_return: "approved" } });
 
-        try {
-            const p = new Preference(mp);
-            const response = await p.create({ body: preference });
-            res.status(200).json({ id: response.id });
-        } catch (error) {
-            res.status(500).json({ error: error.message });
-        }
-    } else {
-        res.status(405).end(); // Método no permitido
+        res.status(200).json({ id: response.id });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 }
