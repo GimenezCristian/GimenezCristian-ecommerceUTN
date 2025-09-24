@@ -5,8 +5,12 @@ const cartCounter = document.getElementById("cart-counter");
 
 const displayCartCounter = () => {
     const cartLength = cart.reduce((acc, el) => acc + el.quanty, 0);
-    cartCounter.style.display = cartLength > 0 ? "block" : "none";
-    cartCounter.innerText = cartLength;
+    if (cartLength > 0) {
+        cartCounter.style.display = "block";
+        cartCounter.innerText = cartLength;
+    } else {
+        cartCounter.style.display = "none";
+    }
 };
 
 const deleteCartProducts = (id) => {
@@ -22,88 +26,80 @@ const displayCart = () => {
     modalOverlay.style.display = "block";
 
     const modalHeader = document.createElement("div");
-    const modalClose = document.createElement("div");
-    modalClose.innerText = "❌";
-    modalClose.className = "modal-close";
-    modalClose.addEventListener("click", () => {
+    modalHeader.className = "modal-header";
+    modalHeader.innerHTML = `<h2>Carrito de compras</h2><span class="modal-close">❌</span>`;
+    modalContainer.append(modalHeader);
+
+    modalHeader.querySelector(".modal-close").addEventListener("click", () => {
         modalContainer.style.display = "none";
         modalOverlay.style.display = "none";
     });
-    modalHeader.append(modalClose);
-
-    const modalTitle = document.createElement("div");
-    modalTitle.innerText = "Carrito de compras";
-    modalTitle.className = "modal-title";
-    modalHeader.append(modalTitle);
-    modalContainer.append(modalHeader);
 
     if (cart.length > 0) {
-        cart.forEach(products => {
+        cart.forEach(product => {
             const modalBody = document.createElement("div");
             modalBody.className = "modal-body";
             modalBody.innerHTML = `
                 <div class="products">
-                    <img class="products-img" src="${products.img}"/>
-                    <div class="products-info"><h4>${products.productName}</h4></div>
-                    <div class="quantity">
-                        <span class="quantity-btn-decrese">-</span>
-                        <span class="quantity-input">${products.quanty}</span>
-                        <span class="quantity-btn-increse">+</span>
+                    <img class="products-img" src="${product.img}"/>
+                    <div class="products-info">
+                        <h4>${product.productName}</h4>
+                        <p>${product.price * product.quanty} $</p>
                     </div>
-                    <div class="price">${products.price * products.quanty} $</div>
+                    <div class="quantity">
+                        <button class="quantity-btn-decrese">-</button>
+                        <span class="quantity-input">${product.quanty}</span>
+                        <button class="quantity-btn-increse">+</button>
+                    </div>
                     <div class="delete-products">❌</div>
                 </div>
             `;
             modalContainer.append(modalBody);
 
             modalBody.querySelector(".quantity-btn-decrese").addEventListener("click", () => {
-                if (products.quanty !== 1) products.quanty--;
+                if (product.quanty > 1) product.quanty--;
                 displayCart();
                 displayCartCounter();
             });
             modalBody.querySelector(".quantity-btn-increse").addEventListener("click", () => {
-                products.quanty++;
+                product.quanty++;
                 displayCart();
                 displayCartCounter();
             });
             modalBody.querySelector(".delete-products").addEventListener("click", () => {
-                deleteCartProducts(products.id);
+                deleteCartProducts(product.id);
             });
         });
 
         const total = cart.reduce((acc, el) => acc + el.price * el.quanty, 0);
         const modalFooter = document.createElement("div");
         modalFooter.className = "modal-footer";
-        modalFooter.innerHTML = `<div class="total-price">Total a pagar 💸 es: ${total}</div>`;
+        modalFooter.innerHTML = `<div>Total a pagar: ${total} $</div>`;
         modalContainer.append(modalFooter);
 
         const payButton = document.createElement("button");
-        payButton.innerText = "Pagar con Mercado Pago 💳";
+        payButton.innerText = "Pagar con Mercado Pago";
         payButton.className = "pay-btn";
         modalContainer.append(payButton);
 
         payButton.addEventListener("click", async () => {
-            const response = await fetch("https://mi-backend-mercadopago.onrender.com/create_preference", {
+            const response = await fetch("/api/create_preference", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({ cart })
             });
             const data = await response.json();
-            const preferenceId = data.preferenceId;
-
             const script = document.createElement("script");
             script.src = "https://sdk.mercadopago.com/js/v2";
             script.onload = () => {
                 const mp = new MercadoPago("APP_USR-1d4b118d-72ac-4799-9a2b-5101df8f306d", { locale: 'es-AR' });
-                mp.checkout({ preference: { id: preferenceId }, autoOpen: true });
+                mp.checkout({ preference: { id: data.id }, autoOpen: true });
             };
             document.body.appendChild(script);
         });
+
     } else {
-        const modalText = document.createElement("h2");
-        modalText.className = "modal-body";
-        modalText.innerText = "Tu carrito 🛒 está vacío :(";
-        modalContainer.append(modalText);
+        modalContainer.innerHTML += `<h2>Tu carrito está vacío 😢</h2>`;
     }
 };
 

@@ -1,13 +1,13 @@
 const shopContent = document.getElementById("shopContent");
 const cart = [];
 
-productos.forEach((products) => {
+productos.forEach(product => {
     const content = document.createElement("div");
     content.className = "card";
     content.innerHTML = `
-        <img src="${products.img}"/>
-        <h3>${products.productName}</h3>
-        <p class="price">${products.price} $</p>
+        <img src="${product.img}"/>
+        <h3>${product.productName}</h3>
+        <p class="price">${product.price} $</p>
     `;
     shopContent.append(content);
 
@@ -16,15 +16,13 @@ productos.forEach((products) => {
     content.append(buyButton);
 
     buyButton.addEventListener("click", () => {
-        const repeat = cart.some((repeatProducts) => repeatProducts.id === products.id);
+        const repeat = cart.some(item => item.id === product.id);
         if (repeat) {
-            cart.map((prod) => {
-                if (prod.id === products.id) {
-                    prod.quanty++;
-                }
+            cart.map(item => {
+                if (item.id === product.id) item.quanty++;
             });
         } else {
-            cart.push({ ...products });
+            cart.push({...product});
         }
         displayCartCounter();
     });

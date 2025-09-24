@@ -1,17 +1,15 @@
 {
-  "name": "e-ecomerce",
+  "name": "ecommerce-backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "type": "module",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^5.1.0",
-    "mercadopago": "^2.9.0"
+    "mercadopago": "^2.9.0",
+    "dotenv": "^16.0.0"
   }
 }
