@@ -1,15 +1,13 @@
 {
-  "name": "ecommerce-backend",
+  "name": "ecommerce-utn",
   "version": "1.0.0",
-  "type": "module",
-  "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "vercel dev",
+    "build": "echo 'No build needed for static site + API routes'",
+    "vercel-build": "echo 'No build needed'"
   },
   "dependencies": {
-    "cors": "^2.8.5",
     "express": "^5.1.0",
-    "mercadopago": "^2.9.0",
-    "dotenv": "^16.0.0"
+    "mercadopago": "^2.9.0"
   }
 }
